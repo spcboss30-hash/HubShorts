@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>HubShorts - Premium Video Portal</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    
+    <script src=""></script>
+
+    <style>
+        /* custom styles for tiktok scroll container */
+        .video-container {
+            scroll-snap-type: y mandatory;
+            height: calc(100dvh - 100px); 
+            scroll-behavior: smooth;
+        }
+        .video-card {
+            scroll-snap-align: start;
+            scroll-snap-stop: always;
+            height: calc(100dvh - 100px); 
+            width: 100%;
+        }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        .video-card iframe {
+            width: 100% !important;
+            height: 100% !important;
+            object-fit: cover;
+        }
+    </style>
+</head>
+
+<body class="bg-zinc-950 text-white min-h-screen font-sans antialiased overflow-x-hidden">
+
+    <header class="bg-zinc-900/80 backdrop-blur-md border-b border-zinc-800/80 px-4 py-3 flex justify-between items-center sticky top-0 z-40">
+        <div class="text-xl font-black tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-orange-500 to-amber-500">
+            HubShorts
+        </div>
+        <nav>
+            <button id="nav-login-btn" class="bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 text-white text-xs font-bold px-5 py-2.5 rounded-xl transition-all active:scale-95 shadow-lg shadow-red-600/20">Login</button>
+            <button id="logout-btn" class="bg-zinc-800 hover:bg-zinc-700 text-white text-xs font-bold px-4 py-2 rounded-xl hidden transition-all active:scale-95">Logout</button>
+        </nav>
+    </header>
+
+    <div class="bg-zinc-900 border-b border-zinc-800 text-center py-2 px-4">
+        <a href="" target="_blank" class="text-xs font-bold text-cyan-400 hover:underline animate-pulse tracking-wide">
+            🔥 Click Here to Watch Exclusive Premium Content HD 🔥
+        </a>
+    </div>
+
+    <main class="max-w-7xl mx-auto px-4 py-6">
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-5" id="video-grid-container">
+        </div>
+    </main>
+
+    <div class="bg-zinc-900 border-t border-zinc-800 text-center py-3 px-4 sticky bottom-0 z-40">
+        <a href="" target="_blank" class="text-xs font-bold text-amber-400 hover:underline tracking-wide">
+            👇 Click Here to Unlock High-Speed Streaming 👇
+        </a>
+    </div>
+
+    <div id="auth-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md flex justify-center items-center z-50 hidden p-4">
+        <div class="w-full max-w-sm bg-zinc-900 border border-zinc-800 p-6 rounded-2xl shadow-2xl relative">
+            <span class="absolute top-4 right-4 text-zinc-500 hover:text-white cursor-pointer text-xl" id="close-auth-btn">&times;</span>
+            <h2 class="text-xl font-bold mb-4 text-center" id="modal-title">Login to Watch Full Video</h2>
+            <form id="auth-form" class="space-y-3">
+                <input type="email" placeholder="Email Address" required class="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-red-500">
+                <input type="password" placeholder="Password" required class="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-red-500">
+                <button type="submit" class="w-full bg-red-600 hover:bg-red-700 py-2.5 rounded-xl font-bold text-sm shadow-lg transition-all active:scale-95">Continue</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="tiktok-player-modal" class="fixed inset-0 bg-black z-50 hidden flex flex-col justify-center items-center overflow-hidden">
+        
+        <div class="w-full max-w-md bg-zinc-950 text-center py-1.5 border-b border-zinc-900 text-[11px] font-bold text-cyan-400 z-50 flex items-center justify-between px-4">
+            <button id="back-to-grid-btn" class="bg-zinc-900 border border-zinc-800 text-white px-3 py-1 rounded-lg flex items-center gap-1 active:scale-90 transition-all cursor-pointer">
+                ✕ Back
+            </button>
+            <a href="" target="_blank" class="animate-pulse">⚡ Click to Expand Stream ⚡</a>
+            <div class="w-10"></div> 
+        </div>
+
+        <div class="relative w-full h-full max-w-md bg-zinc-950 flex flex-col overflow-hidden">
+            
+            <div id="ad-overlay-backdrop" class="absolute inset-0 bg-black/50 z-45 hidden backdrop-blur-[1px] cursor-pointer"></div>
+
+            <div id="video-popup-ad" class="absolute hidden bottom-24 left-4 right-4 z-50 bg-zinc-900 border border-zinc-700 p-4 rounded-2xl shadow-2xl">
+                <button id="close-popup-btn" class="absolute -top-3 -right-3 text-white text-sm bg-red-600 w-7 h-7 rounded-full flex items-center justify-center font-bold shadow-2xl cursor-pointer">✕</button>
+                <div class="flex justify-between items-center mb-2">
+                    <span class="text-[9px] bg-red-600/20 text-red-400 border border-red-500/30 px-2 py-0.5 rounded font-bold">SPONSORED AD</span>
+                    <span class="text-[9px] text-zinc-400">Tap anywhere to close ad</span>
+                </div>
+                <a id="popup-smart-link" href="#" target="_blank" class="block w-full text-center">
+                    <div class="w-full bg-zinc-950 py-3 px-2 rounded-xl border border-dashed border-zinc-700 flex flex-col items-center justify-center min-h-[180px]">
+                        <div id="container-placeholder" class="w-full overflow-hidden flex items-center justify-center"></div>
+                        <p class="text-[10px] text-zinc-400 mt-2 font-medium animate-pulse text-cyan-400">🎁 Click here to unlock premium content!</p>
+                    </div>
+                </a>
+                <div class="id-backup-close-container w-full mt-2 hidden text-center">
+                    <button id="backup-close-btn" class="text-[11px] font-semibold text-zinc-400 bg-zinc-800 px-4 py-1.5 rounded-lg border border-zinc-700 w-full">Skip Advertisement</button>
+                </div>
+            </div>
+
+            <div class="absolute right-4 top-1/2 -translate-y-1/2 z-40 flex flex-col gap-4">
+                <button id="scroll-up-btn" class="w-10 h-10 bg-zinc-900/80 border border-zinc-700/50 backdrop-blur-md rounded-full flex items-center justify-center text-white active:scale-95 transition-all">▲</button>
+                <button id="scroll-down-btn" class="w-10 h-10 bg-zinc-900/80 border border-zinc-700/50 backdrop-blur-md rounded-full flex items-center justify-center text-white active:scale-95 transition-all">▼</button>
+            </div>
+
+            <main id="feed-container" class="w-full overflow-y-scroll video-container no-scrollbar z-10 flex-1">
+                <div id="loading" class="flex h-full items-center justify-center text-zinc-500">
+                    <div class="flex flex-col items-center gap-2">
+                        <div class="w-8 h-8 border-4 border-red-500 border-t-transparent rounded-full animate-spin"></div>
+                        <p class="text-xs text-zinc-400">Loading initial feed...</p>
+                    </div>
+                </div>
+            </main>
+        </div>
+
+        <div class="w-full max-w-md bg-zinc-950 text-center py-2 border-t border-zinc-900 text-[11px] font-bold text-amber-400 z-50">
+            <a href="" target="_blank">👇 Tap here to remove ads & speed up stream 👇</a>
+        </div>
+    </div>
+
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, getDocs, query, orderBy, limit, startAfter } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        // Updated Firebase Config
+        const firebaseConfig = {
+            apiKey: "AIzaSyDtpr6TRRAxyTa9wD6-jquGd6AaqYQb0f4",
+            authDomain: "premium-video-a011e.firebaseapp.com",
+            projectId: "premium-video-a011e",
+            storageBucket: "premium-video-a011e.firebasestorage.app",
+            messagingSenderId: "314939003314",
+            appId: "1:314939003314:web:97067c5cc1e4f96e3d94ab",
+            measurementId: "G-WYPPW40RP5"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // Adsterra Smart Link Placeholder
+        const ADSTERRA_SMART_LINK = ""; 
+        document.getElementById('popup-smart-link').href = ADSTERRA_SMART_LINK || "#";
+
+        let lastVisibleVideo = null;
+        let isFetching = false;
+        const VIDEOS_PER_PAGE = 6; 
+        const feedContainer = document.getElementById('feed-container');
+        const videoGridContainer = document.getElementById('video-grid-container');
+        let userActionCount = 0; 
+        let globalVideosArray = [];
+
+        // Auth Modal Toggles
+        const authModal = document.getElementById('auth-modal');
+        document.getElementById('nav-login-btn').addEventListener('click', () => authModal.classList.remove('hidden'));
+        document.getElementById('close-auth-btn').addEventListener('click', () => authModal.classList.add('hidden'));
+
+        // Close TikTok Modal
+        document.getElementById('back-to-grid-btn').addEventListener('click', () => {
+            document.getElementById('tiktok-player-modal').classList.add('hidden');
+            feedContainer.querySelectorAll('.video-card').forEach(card => card.innerHTML = "");
+        });
+
+        // Grid Video Fetching & Dynamic Thumbnail Design
+        async function fetchGridVideos() {
+            try {
+                // orderBy("createdAt", "desc") ensures the newest videos appear at the top
+                const q = query(collection(db, "videos"), orderBy("createdAt", "desc"));
+                const querySnapshot = await getDocs(q);
+                videoGridContainer.innerHTML = '';
+                globalVideosArray = [];
+
+                let index = 0;
+                querySnapshot.forEach((doc) => {
+                    const videoData = doc.data();
+                    globalVideosArray.push(videoData);
+
+                    // Native Banner Ad Injection: Triggers after every 3rd video (index 3, 6, 9, etc.)
+                    if (index > 0 && index % 3 === 0) {
+                        const bannerAd = document.createElement('div');
+                        // col-span-2 occupies full width on mobile, sm and md ensures it spans the entire grid row
+                        bannerAd.className = "col-span-2 sm:col-span-3 md:col-span-4 bg-zinc-900 border border-zinc-800 p-4 rounded-2xl text-center shadow-xl my-1";
+                        bannerAd.innerHTML = `
+                            <div class="flex justify-between items-center mb-2 px-1">
+                                <span class="text-[9px] bg-cyan-600/20 text-cyan-400 border border-cyan-500/30 px-2 py-0.5 rounded font-bold">SPONSORED BANNER</span>
+                                <span class="text-[9px] text-zinc-500">Premium Partner</span>
+                            </div>
+                            <div class="w-full min-h-[90px] bg-zinc-950 rounded-xl border border-dashed border-zinc-800 flex items-center justify-center p-2">
+                                <p class="text-xs text-zinc-400 font-medium animate-pulse text-cyan-400">🔥 Click here to unlock ultra high-speed premium server! 🔥</p>
+                            </div>
+                        `;
+                        videoGridContainer.appendChild(bannerAd);
+                    }
+
+                    const gridItem = document.createElement('div');
+                    gridItem.className = "bg-zinc-900 border border-zinc-800/80 rounded-2xl overflow-hidden shadow-xl cursor-pointer hover:border-red-500/50 transition-all duration-300 hover:-translate-y-1 active:scale-98 relative group";
+                    
+                    // Unique Premium Thumbnail Layout
+                    gridItem.innerHTML = `
+                        <div class="aspect-[9/16] sm:aspect-video bg-gradient-to-b from-zinc-900 to-zinc-950 flex items-center justify-center relative overflow-hidden">
+                            <div class="absolute inset-0 bg-radial from-red-600/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                            
+                            <div class="absolute top-3 left-3 bg-white/10 backdrop-blur-md border border-white/10 px-2.5 py-1 rounded-lg text-[10px] font-black tracking-wider text-amber-400 shadow-md uppercase z-20">
+                                💎 Premium
+                            </div>
+
+                            <div class="w-14 h-14 bg-zinc-950/60 backdrop-blur-sm border border-zinc-800 rounded-full flex items-center justify-center group-hover:bg-red-600 group-hover:border-red-500 text-white transition-all duration-300 shadow-xl group-hover:shadow-red-600/40 z-20 relative">
+                                <span class="text-lg translate-x-0.5 group-hover:scale-110 transition-transform">▶</span>
+                            </div>
+
+                            <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-zinc-950 via-zinc-950/40 to-transparent p-3 pt-8 z-10">
+                                <div class="flex items-center justify-between text-[10px] text-zinc-400 font-medium">
+                                    <span>🔥 4K Ultra Stream</span>
+                                    <span class="bg-red-600/20 text-red-400 px-1.5 py-0.5 rounded font-bold">1080p</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="p-3 bg-zinc-900 border-t border-zinc-800/50">
+                            <div class="text-xs font-bold text-zinc-200 group-hover:text-red-400 transition-colors truncate">
+                                Exclusive Premium Video #${index + 1}
+                            </div>
+                            <p class="text-[10px] text-zinc-500 mt-0.5">Click to preview short</p>
+                        </div>
+                    `;
+
+                    gridItem.addEventListener('click', () => {
+                        openTikTokPlayer(index);
+                    });
+
+                    videoGridContainer.appendChild(gridItem);
+                    index++;
+                });
+
+            } catch (error) {
+                console.error("Error fetching grid data: ", error);
+            }
+        }
+
+        function openTikTokPlayer(startIndex) {
+            document.getElementById('tiktok-player-modal').classList.remove('hidden');
+            feedContainer.innerHTML = ''; 
+            lastVisibleVideo = null;
+            loadMoreContent(); 
+        }
+
+        function createInFeedAdCard() {
+            const adCard = document.createElement('div');
+            adCard.className = "video-card flex flex-col justify-center items-center bg-zinc-950 p-6 text-center relative";
+            adCard.innerHTML = `
+                <div class="w-full max-w-[300px] bg-zinc-900 border border-zinc-800 p-6 rounded-2xl shadow-xl flex flex-col items-center">
+                    <span class="text-[10px] bg-cyan-600 text-white px-2 py-0.5 rounded font-bold mb-4 tracking-wider">SPONSORED AD</span>
+                    <h3 class="text-sm font-semibold mb-2 text-zinc-200">Unlock Premium Content!</h3>
+                    <p class="text-xs text-zinc-400 mb-6">Click the button below to view restricted premium reward video clips instantly.</p>
+                    <a href="${ADSTERRA_SMART_LINK || '#'}" target="_blank" class="w-full bg-gradient-to-r from-red-500 to-pink-500 py-3 rounded-xl text-sm font-bold shadow-lg block">
+                        🚀 Watch Full Video Now
+                    </a>
+                </div>
+            `;
+            return adCard;
+        }
+
+        function injectVideoWithLoader(containerElement, embedCode) {
+            containerElement.innerHTML = `
+                <div class="absolute inset-0 flex flex-col items-center justify-center bg-zinc-950 z-20 video-loader-wrapper">
+                    <div class="w-10 h-10 border-4 border-red-500 border-t-transparent rounded-full animate-spin mb-3"></div>
+                    <p class="text-xs text-zinc-400 font-medium">Loading video stream...</p>
+                </div>
+                
+                <div class="absolute top-0 left-0 right-0 bottom-[60px] z-30 bg-transparent click-shield-layer pointer-events-none"></div>
+
+                <div class="iframe-holder w-full h-full opacity-0 transition-opacity duration-300">
+                    ${embedCode}
+                </div>
+            `;
+
+            const iframe = containerElement.querySelector('iframe');
+            const loader = containerElement.querySelector('.video-loader-wrapper');
+            const holder = containerElement.querySelector('.iframe-holder');
+            const shield = containerElement.querySelector('.click-shield-layer');
+
+            if (iframe) {
+                iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-forms allow-presentation');
+                iframe.onload = () => {
+                    if (loader) loader.remove();
+                    if (holder) holder.classList.remove('opacity-0');
+                };
+
+                let isTracked = false;
+                const checkIframeFocus = () => {
+                    if (document.activeElement === iframe && !isTracked) {
+                        isTracked = true;
+                        userActionCount++;
+                        checkAndTriggerSmartLink();
+                        if (shield) shield.style.pointerEvents = 'auto';
+                        window.removeEventListener('blur', checkIframeFocus);
+                    }
+                };
+
+                window.addEventListener('blur', checkIframeFocus);
+                shield.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    userActionCount++;
+                    checkAndTriggerSmartLink();
+                });
+
+                setTimeout(() => {
+                    if (loader) loader.remove();
+                    if (holder) holder.classList.remove('opacity-0');
+                }, 4000);
+            }
+        }
+
+        async function loadMoreContent() {
+            if (isFetching) return;
+            isFetching = true;
+
+            try {
+                let videoQuery = query(collection(db, "videos"), orderBy("createdAt", "desc"), limit(VIDEOS_PER_PAGE));
+                if (lastVisibleVideo) {
+                    videoQuery = query(collection(db, "videos"), orderBy("createdAt", "desc"), startAfter(lastVisibleVideo), limit(VIDEOS_PER_PAGE));
+                } else {
+                    feedContainer.innerHTML = ''; 
+                }
+
+                const querySnapshot = await getDocs(videoQuery);
+                if (querySnapshot.empty) {
+                    isFetching = false;
+                    return;
+                }
+
+                lastVisibleVideo = querySnapshot.docs[querySnapshot.docs.length - 1];
+                
+                let videoCounter = 0;
+                querySnapshot.forEach((doc) => {
+                    const videoData = doc.data();
+                    const videoCard = document.createElement('div');
+                    videoCard.className = "video-card flex justify-center items-center bg-black relative";
+                    videoCard.setAttribute('data-embed', videoData.embedCode); 
+                    
+                    injectVideoWithLoader(videoCard, videoData.embedCode);
+                    feedContainer.appendChild(videoCard);
+                    attachIntersectionObserver(videoCard);
+                    videoCounter++;
+
+                    if (videoCounter === 3) {
+                        feedContainer.appendChild(createInFeedAdCard());
+                    }
+                });
+
+            } catch (error) {
+                console.error("Error loading content: ", error);
+            } finally {
+                isFetching = false;
+            }
+        }
+
+        function attachIntersectionObserver(element) {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    const originalEmbed = element.getAttribute('data-embed');
+                    if (entry.isIntersecting) {
+                        if (originalEmbed && (element.innerHTML === "" || !element.querySelector('iframe'))) {
+                            injectVideoWithLoader(element, originalEmbed);
+                        }
+                        userActionCount++;
+                        checkAndTriggerSmartLink();
+
+                        if (element === feedContainer.lastChild || element === feedContainer.lastChild.previousSibling) {
+                            loadMoreContent();
+                        }
+                    } else {
+                        if (originalEmbed) element.innerHTML = ""; 
+                    }
+                });
+            }, { threshold: 0.5 });
+            observer.observe(element);
+        }
+
+        function checkAndTriggerSmartLink() {
+            if (!ADSTERRA_SMART_LINK) return; 
+            const requiredClicks = Math.floor(Math.random() * (10 - 8 + 1)) + 8; 
+            if (userActionCount >= requiredClicks) {
+                window.open(ADSTERRA_SMART_LINK, '_blank');
+                userActionCount = 0; 
+            }
+        }
+
+        function handleBtnNavigation(direction) {
+            userActionCount++; 
+            checkAndTriggerSmartLink();
+            if (direction === 'down') {
+                feedContainer.scrollBy({ top: window.innerHeight - 100, behavior: 'smooth' });
+            } else if (direction === 'up') {
+                feedContainer.scrollBy({ top: -(window.innerHeight - 100), behavior: 'smooth' });
+            }
+        }
+
+        document.getElementById('scroll-down-btn').addEventListener('click', () => handleBtnNavigation('down'));
+        document.getElementById('scroll-up-btn').addEventListener('click', () => handleBtnNavigation('up'));
+
+        // POPUP AD TRIGGER TIMER 
+        const POPUP_INTERVAL = 60000; 
+        const adPopup = document.getElementById('video-popup-ad');
+        const adOverlay = document.getElementById('ad-overlay-backdrop');
+        const backupClose = document.querySelector('.id-backup-close-container');
+        let isScriptLoaded = false; 
+
+        setInterval(() => {
+            if (document.getElementById('tiktok-player-modal').classList.contains('hidden')) return;
+            
+            adPopup.classList.remove('hidden'); 
+            adOverlay.classList.remove('hidden'); 
+            backupClose.classList.add('hidden'); 
+
+            setTimeout(() => {
+                backupClose.classList.remove('hidden');
+            }, 3000);
+
+            if (!isScriptLoaded) {
+                const adScript = document.createElement('script');
+                adScript.type = 'text/javascript';
+                adScript.async = true;
+                adScript.setAttribute('data-cfasync', 'false');
+                adScript.src = ''; // Put Adsterra invoke script URL here
+                document.body.appendChild(adScript);
+                isScriptLoaded = true;
+            }
+        }, POPUP_INTERVAL);
+
+        function hidePopup() {
+            adPopup.classList.add('hidden');
+            adOverlay.classList.add('hidden');
+        }
+
+        document.getElementById('close-popup-btn').addEventListener('click', (e) => { e.stopPropagation(); hidePopup(); });
+        document.getElementById('backup-close-btn').addEventListener('click', (e) => { e.stopPropagation(); hidePopup(); });
+        adOverlay.addEventListener('click', () => hidePopup());
+
+        // Initialize Call
+        fetchGridVideos();
+    </script>
+</body>
+
+</html>
