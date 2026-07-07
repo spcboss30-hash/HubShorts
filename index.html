@@ -5,161 +5,253 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>HubShorts - Premium Video Portal</title>
-    
+
+    <!-- Tailwind CSS v4 -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    
+
+    <!-- Adsterra Native SDK -->
     <script src="https://pl30206953.effectivecpmnetwork.com/17/b4/d3/17b4d317068672bfb8a409b443bfce2a.js"></script>
 
     <style>
-        /* custom styles for tiktok scroll container */
-        .video-container {
-            scroll-snap-type: y mandatory;
-            height: calc(100dvh - 100px); 
-            scroll-behavior: smooth;
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
         }
-        .video-card {
-            scroll-snap-align: start;
-            scroll-snap-stop: always;
-            height: calc(100dvh - 100px); 
-            width: 100%;
+
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
         }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        
-        .video-card iframe {
+
+        .video-wrapper iframe {
             width: 100% !important;
             height: 100% !important;
             object-fit: cover;
         }
+
+        @media (max-width: 768px) {
+            .sticky-player {
+                position: sticky;
+                top: 56px;
+                z-index: 40;
+                background-color: #09090b;
+            }
+        }
+
+        /* Double Shield System - Initial State (Hidden & Deactivated) */
+        .shield-top {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 81%;
+            z-index: 30;
+            background: transparent;
+            cursor: default;
+            display: none;
+            pointer-events: none;
+        }
+
+        .shield-bottom-right {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 100%;
+            height: 15%;
+            max-width: 150px;
+            max-height: 50px;
+            z-index: 30;
+            background: transparent;
+            cursor: default;
+            display: none;
+            pointer-events: none;
+        }
     </style>
 </head>
 
-<body class="bg-zinc-950 text-white min-h-screen font-sans antialiased overflow-x-hidden">
+<body class="bg-zinc-950 text-zinc-50 min-h-screen font-sans antialiased overflow-x-hidden">
 
-    <header class="bg-zinc-900/80 backdrop-blur-md border-b border-zinc-800/80 px-4 py-3 flex justify-between items-center sticky top-0 z-40">
-        <div class="text-xl font-black tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-orange-500 to-amber-500">
+    <!-- Header -->
+    <header
+        class="bg-zinc-900/90 backdrop-blur-md border-b border-zinc-800/80 px-4 py-3 flex justify-between items-center sticky top-0 z-50 h-[56px]">
+        <div class="text-xl font-black tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-orange-500 to-amber-500 cursor-pointer"
+            onclick="window.location.reload()">
             HubShorts
         </div>
         <nav>
-            <button id="nav-login-btn" class="bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 text-white text-xs font-bold px-5 py-2.5 rounded-xl transition-all active:scale-95 shadow-lg shadow-red-600/20">Login</button>
-            <button id="logout-btn" class="bg-zinc-800 hover:bg-zinc-700 text-white text-xs font-bold px-4 py-2 rounded-xl hidden transition-all active:scale-95">Logout</button>
+            <button
+                class="bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 text-white text-xs font-bold px-5 py-2 rounded-xl transition-all active:scale-95 shadow-lg shadow-red-600/20">Login</button>
         </nav>
     </header>
 
-    <div class="flex justify-center my-2">
-        <script>
-            atOptions = {
-                'key' : '97250c3011a63ffe67b4d1ec49ef4c80',
-                'format' : 'iframe',
-                'height' : 50,
-                'width' : 320,
-                'params' : {}
-            };
-        </script>
-        <script src="https://www.highperformanceformat.com/97250c3011a63ffe67b4d1ec49ef4c80/invoke.js"></script>
+    <!-- Top Banner Ad -->
+    <div class="flex justify-center my-3 px-2">
+        <div
+            class="bg-zinc-900/50 p-1.5 rounded-xl border border-zinc-800/60 shadow-lg max-w-full overflow-hidden flex items-center justify-center">
+            <script>
+                atOptions = {
+                    'key': '97250c3011a63ffe67b4d1ec49ef4c80',
+                    'format': 'iframe',
+                    'height': 50,
+                    'width': 320,
+                    'params': {}
+                };
+            </script>
+            <script src="https://www.highperformanceformat.com/97250c3011a63ffe67b4d1ec49ef4c80/invoke.js"></script>
+        </div>
     </div>
 
-    <div class="bg-zinc-900 border-b border-zinc-800 text-center py-2 px-4">
-        <a href="https://www.effectivecpmnetwork.com/x5wdn0u90m?key=e2a6667d2feb20c742d5f51605a1a4d9" target="_blank" class="text-xs font-bold text-cyan-400 hover:underline animate-pulse tracking-wide">
-            🔥 Click Here to Watch Exclusive Premium Content HD 🔥
-        </a>
+    <!-- Layout Container -->
+    <div id="youtube-player-layout"
+        class="max-w-7xl mx-auto px-2 sm:px-4 py-2 grid grid-cols-1 lg:grid-cols-3 gap-6 hidden">
+        <!-- Left Side: Main Player -->
+        <div class="lg:col-span-2 space-y-4">
+            <div class="sticky-player w-full">
+                <div
+                    class="aspect-video bg-zinc-900 rounded-2xl overflow-hidden border border-zinc-800 relative shadow-2xl video-wrapper">
+
+                    <!-- Dynamic Video Loader -->
+                    <div id="video-loading-screen"
+                        class="absolute inset-0 bg-zinc-950 z-35 flex flex-col items-center justify-center gap-3">
+                        <div class="w-10 h-10 border-4 border-red-500 border-t-transparent rounded-full animate-spin">
+                        </div>
+                        <p class="text-[11px] text-zinc-400 font-medium tracking-wide animate-pulse">Establishing
+                            Premium Stream Securely...</p>
+                    </div>
+
+                    <!-- Actual Player Container -->
+                    <div id="actual-video-holder" class="w-full h-full bg-zinc-950"></div>
+
+                    <!-- Player Instant Lock Shield Overlap -->
+                    <div id="player-lock-overlay"
+                        class="absolute inset-0 bg-zinc-950/95 backdrop-blur-md z-40 flex flex-col items-center justify-center p-4 text-center hidden">
+                        <div
+                            class="w-12 h-12 bg-red-600/20 border border-red-500/40 text-red-400 rounded-full flex items-center justify-center text-lg mb-3 animate-pulse">
+                            🔒</div>
+                        <h3 class="text-sm font-bold text-zinc-100 uppercase tracking-wide">Premium Stream Locked</h3>
+                        <p class="text-xs text-zinc-400 mt-1 max-w-xs px-2 leading-relaxed">এই এক্সক্লুসিভ ভিডিওটি দেখতে
+                            চাইলে নিচের বাটনটি ক্লিক করে স্পন্সর অ্যাডটি ভিজিট করে আসুন!</p>
+                        <button id="player-unlock-btn"
+                            class="mt-3 bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 text-white font-bold text-xs px-6 py-2.5 rounded-xl shadow-lg active:scale-95 transition-all cursor-pointer">
+                            🔓 Proceed to Premium Stream
+                        </button>
+                    </div>
+
+                    <!-- Intelligent Interaction Layers -->
+                    <div id="shield-top-layer" class="shield-top"></div>
+                    <div id="shield-bottom-right-layer" class="shield-bottom-right"></div>
+                </div>
+            </div>
+
+            <!-- Video Details -->
+            <div class="bg-zinc-900/40 border border-zinc-900 p-4 rounded-2xl space-y-2">
+                <h1 id="main-video-title" class="text-base sm:text-lg font-black tracking-tight text-zinc-100">Loading
+                    Title...</h1>
+                <div class="flex flex-wrap items-center gap-2 text-xs text-zinc-400 font-medium">
+                    <span id="main-video-views">0 views</span>
+                    <span class="text-zinc-600">•</span>
+                    <span id="main-video-time">Loading time...</span>
+                    <span
+                        class="bg-red-600/20 text-red-400 border border-red-500/30 px-1.5 py-0.5 rounded text-[10px] font-bold uppercase ml-auto">Ultra
+                        HD</span>
+                </div>
+            </div>
+
+            <!-- In-Feed Native Ad Layout -->
+            <div class="bg-zinc-900/60 border border-zinc-800/80 p-3.5 rounded-2xl text-center shadow-xl">
+                <div class="flex justify-between items-center mb-2 px-1">
+                    <span
+                        class="text-[9px] bg-cyan-600/20 text-cyan-400 border border-cyan-500/30 px-2 py-0.5 rounded font-bold uppercase tracking-wider">Sponsored
+                        Network</span>
+                    <a href="https://www.effectivecpmnetwork.com/x5wdn0u90m?key=e2a6667d2feb20c742d5f51605a1a4d9"
+                        target="_blank" class="text-[10px] text-cyan-400 hover:underline font-bold">Remove Ads ⚡</a>
+                </div>
+                <div
+                    class="w-full min-h-[65px] bg-zinc-950/40 rounded-xl border border-dashed border-zinc-800/60 flex items-center justify-center p-1 overflow-hidden">
+                    <div id="container-ad2a277cb179616968d143b403f44c87" class="w-full"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Side: Suggested Next Videos -->
+        <div class="lg:col-span-1 space-y-3">
+            <h2 class="text-sm font-black uppercase tracking-wider text-zinc-400 px-1 flex items-center gap-2">
+                <span class="w-1.5 h-3 bg-red-500 rounded-full"></span> Suggested Content
+            </h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-3" id="suggested-list-container"></div>
+        </div>
     </div>
 
-    <main class="max-w-7xl mx-auto px-3 sm:px-4 py-6">
-        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-5" id="video-grid-container">
+    <!-- Main Grid Layout (Home) -->
+    <main class="max-w-7xl mx-auto px-3 sm:px-4 py-4" id="home-grid-section">
+        <h2 class="text-base font-black uppercase tracking-wider text-zinc-400 mb-4 px-1 flex items-center gap-2">
+            <span class="w-2 h-4 bg-gradient-to-b from-red-500 to-orange-500 rounded"></span> Recommended Premium Videos
+        </h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5" id="main-video-grid">
+            <div class="col-span-full text-center py-12 text-zinc-600 text-xs">Fetching dynamic feeds...</div>
         </div>
     </main>
 
-    <div class="bg-zinc-900 border-t border-zinc-800 text-center py-3 px-4 sticky bottom-0 z-40">
-        <a href="https://www.effectivecpmnetwork.com/x5wdn0u90m?key=e2a6667d2feb20c742d5f51605a1a4d9" target="_blank" class="text-xs font-bold text-amber-400 hover:underline tracking-wide">
-            👇 Click Here to Unlock High-Speed Streaming 👇
+    <!-- Bottom Fixed Ad Bar -->
+    <div
+        class="bg-zinc-900/95 backdrop-blur-sm border-t border-zinc-800 text-center py-1.5 px-4 sticky bottom-0 z-50 h-[68px] flex flex-col items-center justify-center">
+        <a href="https://www.effectivecpmnetwork.com/x5wdn0u90m?key=e2a6667d2feb20c742d5f51605a1a4d9" target="_blank"
+            class="text-[10px] font-bold text-amber-400 hover:underline tracking-wide mb-0.5 block">
+            👇 Watch Premium Content In High-Speed Streaming 👇
         </a>
-        <div class="flex justify-center mt-2">
+        <div class="max-w-full overflow-hidden flex items-center justify-center">
             <script>
                 atOptions = {
-                    'key' : 'd429408ce168f0ffa4c12f7ee5a48b41',
-                    'format' : 'iframe',
-                    'height' : 60,
-                    'width' : 468,
-                    'params' : {}
+                    'key': 'd429408ce168f0ffa4c12f7ee5a48b41',
+                    'format': 'iframe',
+                    'height': 60,
+                    'width': 468,
+                    'params': {}
                 };
             </script>
             <script src="https://www.highperformanceformat.com/d429408ce168f0ffa4c12f7ee5a48b41/invoke.js"></script>
         </div>
     </div>
 
-    <div id="auth-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md flex justify-center items-center z-50 hidden p-4">
-        <div class="w-full max-w-sm bg-zinc-900 border border-zinc-800 p-6 rounded-2xl shadow-2xl relative">
-            <span class="absolute top-4 right-4 text-zinc-500 hover:text-white cursor-pointer text-xl" id="close-auth-btn">&times;</span>
-            <h2 class="text-xl font-bold mb-4 text-center" id="modal-title">Login to Watch Full Video</h2>
-            <form id="auth-form" class="space-y-3">
-                <input type="email" placeholder="Email Address" required class="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-red-500">
-                <input type="password" placeholder="Password" required class="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-red-500">
-                <button type="submit" class="w-full bg-red-600 hover:bg-red-700 py-2.5 rounded-xl font-bold text-sm shadow-lg transition-all active:scale-95">Continue</button>
-            </form>
-        </div>
-    </div>
-
-    <div id="tiktok-player-modal" class="fixed inset-0 bg-black z-50 hidden flex flex-col justify-center items-center overflow-hidden">
-        
-        <div class="w-full max-w-md bg-zinc-950 text-center py-1.5 border-b border-zinc-900 text-[11px] font-bold text-cyan-400 z-50 flex items-center justify-between px-4">
-            <button id="back-to-grid-btn" class="bg-zinc-900 border border-zinc-800 text-white px-3 py-1 rounded-lg flex items-center gap-1 active:scale-90 transition-all cursor-pointer">
-                ✕ Back
-            </button>
-            <a href="https://www.effectivecpmnetwork.com/x5wdn0u90m?key=e2a6667d2feb20c742d5f51605a1a4d9" target="_blank" class="animate-pulse">⚡ Click to Expand Stream ⚡</a>
-            <div class="w-10"></div> 
-        </div>
-
-        <div class="relative w-full h-full max-w-md bg-zinc-950 flex flex-col overflow-hidden">
-            
-            <div id="ad-overlay-backdrop" class="absolute inset-0 bg-black/50 z-45 hidden backdrop-blur-[1px] cursor-pointer"></div>
-
-            <div id="video-popup-ad" class="absolute hidden bottom-24 left-4 right-4 z-50 bg-zinc-900 border border-zinc-700 p-4 rounded-2xl shadow-2xl">
-                <button id="close-popup-btn" class="absolute -top-3 -right-3 text-white text-sm bg-red-600 w-7 h-7 rounded-full flex items-center justify-center font-bold shadow-2xl cursor-pointer">✕</button>
-                <div class="flex justify-between items-center mb-2">
-                    <span class="text-[9px] bg-red-600/20 text-red-400 border border-red-500/30 px-2 py-0.5 rounded font-bold">SPONSORED AD</span>
-                    <span class="text-[9px] text-zinc-400">Tap anywhere to close ad</span>
-                </div>
-                <a id="popup-smart-link" href="https://www.effectivecpmnetwork.com/x5wdn0u90m?key=e2a6667d2feb20c742d5f51605a1a4d9" target="_blank" class="block w-full text-center">
-                    <div class="w-full bg-zinc-950 py-3 px-2 rounded-xl border border-dashed border-zinc-700 flex flex-col items-center justify-center min-h-[180px]">
-                        <div id="container-placeholder" class="w-full overflow-hidden flex items-center justify-center">
-                            <script async="async" data-cfasync="false" src="https://pl30206955.effectivecpmnetwork.com/ad2a277cb179616968d143b403f44c87/invoke.js"></script>
-                            <div id="container-ad2a277cb179616968d143b403f44c87"></div>
-                        </div>
-                        <p class="text-[10px] text-zinc-400 mt-2 font-medium animate-pulse text-cyan-400">🎁 Click here to unlock premium content!</p>
-                    </div>
-                </a>
-                <div class="id-backup-close-container w-full mt-2 hidden text-center">
-                    <button id="backup-close-btn" class="text-[11px] font-semibold text-zinc-400 bg-zinc-800 px-4 py-1.5 rounded-lg border border-zinc-700 w-full">Skip Advertisement</button>
-                </div>
+    <!-- Premium Unlock Modal Popup -->
+    <div id="premium-lock-modal"
+        class="fixed inset-0 bg-black/90 backdrop-blur-xl flex justify-center items-center z-50 p-4 md:p-6 hidden">
+        <div
+            class="w-full max-w-md bg-zinc-900 border border-zinc-800/90 rounded-2xl shadow-2xl relative overflow-hidden flex flex-col transition-all">
+            <div id="modal-bg-thumb"
+                class="absolute inset-0 bg-cover bg-center blur-xl opacity-20 scale-110 pointer-events-none"></div>
+            <div
+                class="flex justify-between items-center px-5 pt-4 pb-2 border-b border-zinc-800/40 relative z-10 shrink-0">
+                <span
+                    class="text-[9px] bg-amber-500/20 text-amber-400 border border-amber-500/30 px-2.5 py-0.5 rounded font-black tracking-widest uppercase">Premium
+                    Reward Offer</span>
+                <button id="close-lock-modal-btn"
+                    class="text-zinc-400 hover:text-red-500 font-medium text-3xl transition-colors focus:outline-none cursor-pointer p-1">&times;</button>
             </div>
-
-            <div class="absolute right-4 top-1/2 -translate-y-1/2 z-40 flex flex-col gap-4">
-                <button id="scroll-up-btn" class="w-10 h-10 bg-zinc-900/80 border border-zinc-700/50 backdrop-blur-md rounded-full flex items-center justify-center text-white active:scale-95 transition-all">▲</button>
-                <button id="scroll-down-btn" class="w-10 h-10 bg-zinc-900/80 border border-zinc-700/50 backdrop-blur-md rounded-full flex items-center justify-center text-white active:scale-95 transition-all">▼</button>
-            </div>
-
-            <main id="feed-container" class="w-full overflow-y-scroll video-container no-scrollbar z-10 flex-1">
-                <div id="loading" class="flex h-full items-center justify-center text-zinc-500">
-                    <div class="flex flex-col items-center gap-2">
-                        <div class="w-8 h-8 border-4 border-red-500 border-t-transparent rounded-full animate-spin mb-3"></div>
-                        <p class="text-xs text-zinc-400">Loading initial feed...</p>
+            <div class="p-5 md:p-6 relative z-10 flex-1 flex flex-col items-center justify-center text-center">
+                <div
+                    class="w-full aspect-video bg-zinc-950 rounded-xl overflow-hidden border border-zinc-800/80 shadow-2xl mb-4 relative group shrink-0">
+                    <img id="modal-video-preview-img" src="" alt="Preview" class="w-full h-full object-cover">
+                    <div class="absolute inset-0 bg-black/50 flex items-center justify-center">
+                        <span
+                            class="w-12 h-12 bg-red-600/90 border border-red-500 text-white rounded-full flex items-center justify-center text-sm shadow-xl font-bold animate-pulse">🔒</span>
                     </div>
                 </div>
-            </main>
-        </div>
-
-        <div class="w-full max-w-md bg-zinc-950 text-center py-2 border-t border-zinc-900 text-[11px] font-bold text-amber-400 z-50">
-            <a href="https://www.effectivecpmnetwork.com/x5wdn0u90m?key=e2a6667d2feb20c742d5f51605a1a4d9" target="_blank">👇 Tap here to remove ads & speed up stream 👇</a>
+                <h2 id="modal-video-title" class="text-sm md:text-base font-bold text-zinc-100 line-clamp-1 px-1">Unlock
+                    Exclusive Video Inside</h2>
+                <p class="text-xs text-zinc-400 mt-2 px-2 leading-relaxed">This restricted premium video has been picked
+                    randomly for you. Support our network to unlock instant stream access!</p>
+                <button id="unlock-premium-btn"
+                    class="w-full mt-5 bg-gradient-to-r from-red-600 via-orange-600 to-amber-500 text-white font-bold text-xs py-3.5 rounded-xl shadow-lg shadow-orange-600/20 transition-all active:scale-95 cursor-pointer uppercase tracking-wider">
+                    🚀 Watch Premium HD
+                </button>
+            </div>
         </div>
     </div>
-
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, getDocs, query, orderBy, limit, startAfter } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-        // Firebase Config
         const firebaseConfig = {
             apiKey: "AIzaSyDtpr6TRRAxyTa9wD6-jquGd6AaqYQb0f4",
             authDomain: "premium-video-a011e.firebaseapp.com",
@@ -173,306 +265,293 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // Adsterra Smart Link
-        const ADSTERRA_SMART_LINK = "https://www.effectivecpmnetwork.com/x5wdn0u90m?key=e2a6667d2feb20c742d5f51605a1a4d9"; 
-        document.getElementById('popup-smart-link').href = ADSTERRA_SMART_LINK || "#";
+        const ADSTERRA_SMART_LINK = "https://www.effectivecpmnetwork.com/x5wdn0u90m?key=e2a6667d2feb20c742d5f51605a1a4d9";
 
-        let lastVisibleVideo = null;
-        let isFetching = false;
-        const VIDEOS_PER_PAGE = 6; 
-        const feedContainer = document.getElementById('feed-container');
-        const videoGridContainer = document.getElementById('video-grid-container');
-        let userActionCount = 0; 
-        let globalVideosArray = [];
+        const thumbnails = [
+            "https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=600&auto=format&fit=crop",
+            "https://images.unsplash.com/photo-1485846234645-a62644f84728?q=80&w=600&auto=format&fit=crop",
+            "https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c?q=80&w=600&auto=format&fit=crop",
+            "https://images.unsplash.com/photo-1478720143033-6a972678da30?q=80&w=600&auto=format&fit=crop",
+            "https://images.unsplash.com/photo-1542204172-e7052809a86e?q=80&w=600&auto=format&fit=crop",
+            "https://images.unsplash.com/photo-1723109438209-2f6402e08c7c?q=80&w=687&auto=format&fit=crop",
+            "https://images.unsplash.com/photo-1598719830762-055a6665a463?q=80&w=687&auto=format&fit=crop",
+            "https://images.unsplash.com/photo-1592399668789-6432393d5761?q=80&w=1170&auto=format&fit=crop",
+            "https://images.unsplash.com/photo-1593527538338-86235520a070?q=80&w=1170&auto=format&fit=crop",
+            "https://images.unsplash.com/photo-1592398289517-d9437d109bc2?q=80&w=1170&auto=format&fit=crop",
+            "https://images.unsplash.com/photo-1518561602890-728830e35ed2?q=80&w=1071&auto=format&fit=crop",
+            "https://images.unsplash.com/photo-1593527090369-c0e50e7ea3f5?q=80&w=1170&auto=format&fit=crop",
+            "https://images.unsplash.com/photo-1504194569341-48a2e831a3a7?q=80&w=1170&auto=format&fit=crop",
+            "https://images.unsplash.com/photo-1594730366202-0c102627dec6?q=80&w=687&auto=format&fit=crop",
+            "https://images.unsplash.com/photo-1675685438957-3f2074f10c8e?q=80&w=1170&auto=format&fit=crop",
+            "https://images.unsplash.com/photo-1641128839860-e2d6057f99d2?q=80&w=687&auto=format&fit=crop",
+            "https://images.unsplash.com/photo-1568730578242-a69e575e697e?q=80&w=687&auto=format&fit=crop"
+        ];
 
-        // Auth Modal Toggles
-        const authModal = document.getElementById('auth-modal');
-        document.getElementById('nav-login-btn').addEventListener('click', () => authModal.classList.remove('hidden'));
-        document.getElementById('close-auth-btn').addEventListener('click', () => authModal.classList.add('hidden'));
+        const mainGrid = document.getElementById('main-video-grid');
+        const homeGridSection = document.getElementById('home-grid-section');
+        const playerLayout = document.getElementById('youtube-player-layout');
+        const mapContainer = document.getElementById('suggested-list-container');
 
-        // Close TikTok Modal
-        document.getElementById('back-to-grid-btn').addEventListener('click', () => {
-            document.getElementById('tiktok-player-modal').classList.add('hidden');
-            feedContainer.querySelectorAll('.video-card').forEach(card => card.innerHTML = "");
-        });
+        const videoHolder = document.getElementById('actual-video-holder');
+        const playerLockOverlay = document.getElementById('player-lock-overlay');
+        const playerUnlockBtn = document.getElementById('player-unlock-btn');
+        const loadingScreen = document.getElementById('video-loading-screen');
 
-        // Grid Video Fetching
-        async function fetchGridVideos() {
+        const shieldTop = document.getElementById('shield-top-layer');
+        const shieldBottomRight = document.getElementById('shield-bottom-right-layer');
+
+        const mainTitle = document.getElementById('main-video-title');
+        const mainViews = document.getElementById('main-video-views');
+        const mainTime = document.getElementById('main-video-time');
+
+        // Modal Elements
+        const lockModal = document.getElementById('premium-lock-modal');
+        const unlockBtn = document.getElementById('unlock-premium-btn');
+        const closeLockModalBtn = document.getElementById('close-lock-modal-btn');
+        const modalBgThumb = document.getElementById('modal-bg-thumb');
+        const modalVideoPreviewImg = document.getElementById('modal-video-preview-img');
+        const modalVideoTitle = document.getElementById('modal-video-title');
+
+        let globalVideos = [];
+        let randomSelectedIdx = null;
+        let isPopupVideoUnlocked = false;
+        let activeVideoIdx = null;
+        let isTracked = false;
+        let focusInterval = null;
+
+        function extractTitle(embedStr, index) {
+            try {
+                const doc = new DOMParser().parseFromString(embedStr, 'text/html');
+                const title = doc.querySelector('iframe')?.getAttribute('title');
+                return title && title.trim().length > 0 ? title : `Exclusive Premium Stream #${index + 1}`;
+            } catch {
+                return `Exclusive Premium Stream #${index + 1}`;
+            }
+        }
+
+        function generateMetadata() {
+            const viewCounts = ["45K views", "120K views", "88K views", "250K views", "1.2M views"];
+            const timeGaps = ["2 hours ago", "5 hours ago", "1 day ago", "3 days ago", "1 week ago"];
+            return {
+                views: viewCounts[Math.floor(Math.random() * viewCounts.length)],
+                time: timeGaps[Math.floor(Math.random() * timeGaps.length)]
+            };
+        }
+
+        async function initPortal() {
             try {
                 const q = query(collection(db, "videos"), orderBy("createdAt", "desc"));
-                const querySnapshot = await getDocs(q);
-                videoGridContainer.innerHTML = '';
-                globalVideosArray = [];
+                const snapshot = await getDocs(q);
+                mainGrid.innerHTML = '';
+                mapContainer.innerHTML = '';
+                globalVideos = [];
 
-                let index = 0;
-                querySnapshot.forEach((doc) => {
-                    const videoData = doc.data();
-                    globalVideosArray.push(videoData);
-
-                    // Dynamically set banner column spans based on grid layout
-                    if (index > 0 && index % 4 === 0) {
-                        const bannerAd = document.createElement('div');
-                        bannerAd.className = "col-span-2 sm:col-span-3 md:col-span-4 bg-zinc-900 border border-zinc-800 p-3 rounded-xl text-center shadow-xl my-1";
-                        bannerAd.innerHTML = `
-                            <div class="flex justify-between items-center mb-1.5 px-1">
-                                <span class="text-[8px] bg-cyan-600/20 text-cyan-400 border border-cyan-500/30 px-1.5 py-0.5 rounded font-bold">SPONSORED BANNER</span>
-                                <span class="text-[8px] text-zinc-500">Premium Partner</span>
-                            </div>
-                            <div class="w-full min-h-[70px] bg-zinc-950 rounded-xl border border-dashed border-zinc-800 flex items-center justify-center p-1">
-                                <script async="async" data-cfasync="false" src="https://pl30206955.effectivecpmnetwork.com/ad2a277cb179616968d143b403f44c87/invoke.js"><\/script>
-                                <div id="container-ad2a277cb179616968d143b403f44c87"></div>
-                            </div>
-                        `;
-                        videoGridContainer.appendChild(bannerAd);
-                    }
-
-                    const gridItem = document.createElement('div');
-                    gridItem.className = "bg-zinc-900 border border-zinc-800/80 rounded-xl overflow-hidden shadow-xl cursor-pointer hover:border-red-500/50 transition-all duration-300 hover:-translate-y-1 active:scale-98 relative group";
-                    
-                    // Box layout (aspect-video) with adjusted padding for perfect 2x2 view on mobile
-                    gridItem.innerHTML = `
-                        <div class="aspect-video bg-cover bg-center flex items-center justify-center relative overflow-hidden" style="background-image: url('https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=600&auto=format&fit=crop');">
-                            <div class="absolute inset-0 bg-black/60 group-hover:bg-black/40 transition-colors duration-300"></div>
-                            <div class="absolute inset-0 bg-radial from-red-600/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                            <div class="absolute top-1.5 left-1.5 bg-white/10 backdrop-blur-md border border-white/10 px-1.5 py-0.5 rounded text-[8px] font-black tracking-wider text-amber-400 shadow-md uppercase z-20">
-                                💎 Prem
-                            </div>
-                            <div class="w-8 h-8 sm:w-12 sm:h-12 bg-zinc-950/60 backdrop-blur-sm border border-zinc-800 rounded-full flex items-center justify-center group-hover:bg-red-600 group-hover:border-red-500 text-white transition-all duration-300 shadow-xl z-20 relative">
-                                <span class="text-xs sm:text-base translate-x-0.5 group-hover:scale-110 transition-transform">▶</span>
-                            </div>
-                            <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-zinc-950 via-zinc-950/40 to-transparent p-1.5 pt-4 z-10">
-                                <div class="flex items-center justify-between text-[8px] text-zinc-400 font-medium">
-                                    <span class="truncate max-w-[60%]">🔥 4K Stream</span>
-                                    <span class="bg-red-600/20 text-red-400 px-1 rounded font-bold scale-90">HD</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="p-2 bg-zinc-900 border-t border-zinc-800/50">
-                            <div class="text-[10px] sm:text-xs font-bold text-zinc-200 group-hover:text-red-400 transition-colors truncate">
-                                Exclusive Video #${index + 1}
-                            </div>
-                        </div>
-                    `;
-
-                    gridItem.addEventListener('click', () => {
-                        openTikTokPlayer(index);
-                    });
-
-                    videoGridContainer.appendChild(gridItem);
-                    index++;
-                });
-
-            } catch (error) {
-                console.error("Error fetching grid data: ", error);
-            }
-        }
-
-        function openTikTokPlayer(startIndex) {
-            document.getElementById('tiktok-player-modal').classList.remove('hidden');
-            feedContainer.innerHTML = ''; 
-            lastVisibleVideo = null;
-            loadMoreContent(); 
-        }
-
-        function createInFeedAdCard() {
-            const adCard = document.createElement('div');
-            adCard.className = "video-card flex flex-col justify-center items-center bg-zinc-950 p-6 text-center relative";
-            adCard.innerHTML = `
-                <div class="w-full max-w-[300px] bg-zinc-900 border border-zinc-800 p-6 rounded-2xl shadow-xl flex flex-col items-center">
-                    <span class="text-[10px] bg-cyan-600 text-white px-2 py-0.5 rounded font-bold mb-4 tracking-wider">SPONSORED AD</span>
-                    <h3 class="text-sm font-semibold mb-2 text-zinc-200">Unlock Premium Content!</h3>
-                    <p class="text-xs text-zinc-400 mb-6">Click the button below to view restricted premium reward video clips instantly.</p>
-                    <a href="${ADSTERRA_SMART_LINK || '#'}" target="_blank" class="w-full bg-gradient-to-r from-red-500 to-pink-500 py-3 rounded-xl text-sm font-bold shadow-lg block">
-                        🚀 Watch Full Video Now
-                    </a>
-                </div>
-            `;
-            return adCard;
-        }
-
-        function injectVideoWithLoader(containerElement, embedCode) {
-            containerElement.innerHTML = `
-                <div class="absolute inset-0 flex flex-col items-center justify-center bg-zinc-950 z-20 video-loader-wrapper">
-                    <div class="w-10 h-10 border-4 border-red-500 border-t-transparent rounded-full animate-spin mb-3"></div>
-                    <p class="text-xs text-zinc-400 font-medium">Loading video stream...</p>
-                </div>
-                
-                <div class="absolute inset-x-0 top-0 bottom-[80px] z-30 bg-transparent click-shield-layer pointer-events-none"></div>
-
-                <div class="iframe-holder w-full h-full opacity-0 transition-opacity duration-300">
-                    ${embedCode}
-                </div>
-            `;
-
-            const iframe = containerElement.querySelector('iframe');
-            const loader = containerElement.querySelector('.video-loader-wrapper');
-            const holder = containerElement.querySelector('.iframe-holder');
-            const shield = containerElement.querySelector('.click-shield-layer');
-
-            if (iframe) {
-                iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-forms allow-presentation');
-                iframe.onload = () => {
-                    if (loader) loader.remove();
-                    if (holder) holder.classList.remove('opacity-0');
-                };
-
-                // Track original play click using blur event when user interacts with iframe
-                let dynamicShieldTriggered = false;
-                const trackFirstClickOnVideo = () => {
-                    if (document.activeElement === iframe && !dynamicShieldTriggered) {
-                        dynamicShieldTriggered = true;
-                        userActionCount++;
-                        checkAndTriggerSmartLink();
-                        
-                        // Activate shield curtain immediately for upper areas
-                        if (shield) shield.classList.remove('pointer-events-none');
-                        window.removeEventListener('blur', trackFirstClickOnVideo);
-                    }
-                };
-                window.addEventListener('blur', trackFirstClickOnVideo);
-
-                // Activating custom porda actions for the following clicks
-                shield.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    userActionCount++;
-                    checkAndTriggerSmartLink();
-                });
-
-                setTimeout(() => {
-                    if (loader) loader.remove();
-                    if (holder) holder.classList.remove('opacity-0');
-                }, 4000);
-            }
-        }
-
-        async function loadMoreContent() {
-            if (isFetching) return;
-            isFetching = true;
-
-            try {
-                let videoQuery = query(collection(db, "videos"), orderBy("createdAt", "desc"), limit(VIDEOS_PER_PAGE));
-                if (lastVisibleVideo) {
-                    videoQuery = query(collection(db, "videos"), orderBy("createdAt", "desc"), startAfter(lastVisibleVideo), limit(VIDEOS_PER_PAGE));
-                } else {
-                    feedContainer.innerHTML = ''; 
-                }
-
-                const querySnapshot = await getDocs(videoQuery);
-                if (querySnapshot.empty) {
-                    isFetching = false;
+                if (snapshot.empty) {
+                    mainGrid.innerHTML = '<div class="text-zinc-600 text-xs p-4 col-span-full">No active streaming assets found.</div>';
                     return;
                 }
 
-                lastVisibleVideo = querySnapshot.docs[querySnapshot.docs.length - 1];
-                
-                let videoCounter = 0;
-                querySnapshot.forEach((doc) => {
-                    const videoData = doc.data();
-                    const videoCard = document.createElement('div');
-                    videoCard.className = "video-card flex justify-center items-center bg-black relative";
-                    videoCard.setAttribute('data-embed', videoData.embedCode); 
-                    
-                    injectVideoWithLoader(videoCard, videoData.embedCode);
-                    feedContainer.appendChild(videoCard);
-                    attachIntersectionObserver(videoCard);
-                    videoCounter++;
+                let index = 0;
+                snapshot.forEach((doc) => {
+                    const data = doc.data();
+                    const meta = generateMetadata();
+                    const computedTitle = extractTitle(data.embedCode, index);
+                    const finalThumb = data.thumbnailUrl ? data.thumbnailUrl : thumbnails[index % thumbnails.length];
 
-                    if (videoCounter === 3) {
-                        feedContainer.appendChild(createInFeedAdCard());
-                    }
+                    const videoObj = {
+                        ...data,
+                        title: computedTitle,
+                        thumb: finalThumb,
+                        views: meta.views,
+                        time: meta.time
+                    };
+                    globalVideos.push(videoObj);
+                    index++;
                 });
 
-            } catch (error) {
-                console.error("Error loading content: ", error);
-            } finally {
-                isFetching = false;
-            }
-        }
-
-        function attachIntersectionObserver(element) {
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    const originalEmbed = element.getAttribute('data-embed');
-                    if (entry.isIntersecting) {
-                        if (originalEmbed && (element.innerHTML === "" || !element.querySelector('iframe'))) {
-                            injectVideoWithLoader(element, originalEmbed);
-                        }
-                        userActionCount++;
-                        checkAndTriggerSmartLink();
-
-                        if (element === feedContainer.lastChild || element === feedContainer.lastChild.previousSibling) {
-                            loadMoreContent();
-                        }
-                    } else {
-                        if (originalEmbed) element.innerHTML = ""; 
+                if (!sessionStorage.getItem('popupHasShown')) {
+                    randomSelectedIdx = Math.floor(Math.random() * globalVideos.length);
+                    sessionStorage.setItem('targetedLockIndex', randomSelectedIdx.toString());
+                    sessionStorage.setItem('popupHasShown', 'true');
+                } else {
+                    const savedIdx = sessionStorage.getItem('targetedLockIndex');
+                    if (savedIdx !== null) {
+                        randomSelectedIdx = parseInt(savedIdx, 10);
                     }
+                }
+
+                globalVideos.forEach((videoObj, idx) => {
+                    const gridItem = document.createElement('div');
+                    gridItem.className = "bg-zinc-900 border border-zinc-900 hover:border-zinc-800 rounded-2xl overflow-hidden shadow-xl cursor-pointer hover:-translate-y-1 transition-all duration-300 group active:scale-98 flex flex-col";
+                    gridItem.innerHTML = `
+                        <div class="aspect-video bg-cover bg-center flex items-center justify-center relative overflow-hidden" style="background-image: url('${videoObj.thumb}');">
+                            <div class="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-colors"></div>
+                            <div class="w-10 h-10 bg-zinc-950/80 backdrop-blur-sm border border-zinc-800 rounded-full flex items-center justify-center group-hover:bg-red-600 group-hover:border-red-500 text-white text-xs transition-all duration-300 shadow-xl">▶</div>
+                            <div class="absolute bottom-2 right-2 bg-black/80 px-1.5 py-0.5 rounded text-[9px] font-bold tracking-wide">HD</div>
+                        </div>
+                        <div class="p-3 flex-1 flex flex-col justify-between">
+                            <h3 class="text-xs sm:text-sm font-bold text-zinc-200 group-hover:text-red-400 transition-colors line-clamp-2 leading-snug">${videoObj.title}</h3>
+                            <p class="text-[11px] text-zinc-500 mt-1.5 font-medium">${videoObj.views} • ${videoObj.time}</p>
+                        </div>
+                    `;
+                    gridItem.addEventListener('click', () => loadVideoRequest(idx));
+                    mainGrid.appendChild(gridItem);
+
+                    if ((idx + 1) % 4 === 0) {
+                        const adGridItem = document.createElement('div');
+                        adGridItem.className = "bg-zinc-900/40 border border-zinc-800/50 rounded-2xl p-3 flex flex-col items-center justify-center text-center shadow-md min-h-[180px]";
+                        adGridItem.innerHTML = `
+                            <span class="text-[8px] bg-emerald-600/20 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded font-bold uppercase mb-3">Sponsored Video Clip</span>
+                            <div class="w-full flex items-center justify-center overflow-hidden">
+                                <iframe src="about:blank" width="320" height="50" frameborder="0" scrolling="no" class="bg-zinc-950/30 rounded-lg"></iframe>
+                            </div>
+                        `;
+                        mainGrid.appendChild(adGridItem);
+                    }
+
+                    const sideItem = document.createElement('div');
+                    sideItem.className = "flex gap-3 bg-zinc-900/30 hover:bg-zinc-900 border border-zinc-900 hover:border-zinc-800 p-2 rounded-xl cursor-pointer transition-all duration-200 group active:scale-[0.99]";
+                    sideItem.innerHTML = `
+                        <div class="w-28 sm:w-32 aspect-video bg-cover bg-center rounded-lg relative overflow-hidden shadow shrink-0" style="background-image: url('${videoObj.thumb}');">
+                            <div class="absolute inset-0 bg-black/30 group-hover:bg-black/10 transition-colors"></div>
+                        </div>
+                        <div class="flex flex-col justify-center min-w-0 flex-1">
+                            <h3 class="text-xs font-bold text-zinc-200 group-hover:text-red-400 line-clamp-2 transition-colors leading-tight">${videoObj.title}</h3>
+                            <p class="text-[10px] text-zinc-500 mt-1">${videoObj.views} • ${videoObj.time}</p>
+                        </div>
+                    `;
+                    sideItem.addEventListener('click', () => loadVideoRequest(idx));
+                    mapContainer.appendChild(sideItem);
                 });
-            }, { threshold: 0.5 });
-            observer.observe(element);
-        }
 
-        function checkAndTriggerSmartLink() {
-            if (!ADSTERRA_SMART_LINK) return; 
-            const requiredClicks = Math.floor(Math.random() * (10 - 8 + 1)) + 8; 
-            if (userActionCount >= requiredClicks) {
-                window.open(ADSTERRA_SMART_LINK, '_blank');
-                userActionCount = 0; 
+                if (!sessionStorage.getItem('popupDismissed') && randomSelectedIdx !== null) {
+                    const targetVideo = globalVideos[randomSelectedIdx];
+                    if (targetVideo) {
+                        modalBgThumb.style.backgroundImage = `url('${targetVideo.thumb}')`;
+                        modalVideoPreviewImg.src = targetVideo.thumb;
+                        modalVideoTitle.innerText = targetVideo.title;
+                        lockModal.classList.remove('hidden');
+                    }
+                }
+
+            } catch (err) {
+                console.error("Initialization failure: ", err);
             }
         }
 
-        function handleBtnNavigation(direction) {
-            userActionCount++; 
-            checkAndTriggerSmartLink();
-            if (direction === 'down') {
-                feedContainer.scrollBy({ top: window.innerHeight - 100, behavior: 'smooth' });
-            } else if (direction === 'up') {
-                feedContainer.scrollBy({ top: -(window.innerHeight - 100), behavior: 'smooth' });
+        function loadVideoRequest(idx) {
+            activeVideoIdx = idx;
+            const target = globalVideos[idx];
+            if (!target) return;
+
+            playerLayout.classList.remove('hidden');
+            window.scrollTo({ top: playerLayout.offsetTop - 20, behavior: 'smooth' });
+
+            mainTitle.innerText = target.title;
+            mainViews.innerText = target.views;
+            mainTime.innerText = target.time;
+
+            if (idx === randomSelectedIdx && !isPopupVideoUnlocked) {
+                loadingScreen.classList.add('hidden');
+                videoHolder.innerHTML = `<div class="w-full h-full bg-zinc-950 flex items-center justify-center text-zinc-700 text-xs">Premium Authentication Required...</div>`;
+                playerLockOverlay.classList.remove('hidden');
+                shieldTop.style.pointerEvents = 'none';
+                shieldBottomRight.style.pointerEvents = 'none';
+            } else {
+                executeActualStreaming(target);
             }
         }
 
-        document.getElementById('scroll-down-btn').addEventListener('click', () => handleBtnNavigation('down'));
-        document.getElementById('scroll-up-btn').addEventListener('click', () => handleBtnNavigation('up'));
+        function executeActualStreaming(target) {
+            playerLockOverlay.classList.add('hidden');
+            loadingScreen.classList.remove('hidden');
 
-        // POPUP AD TRIGGER TIMER 
-        const POPUP_INTERVAL = 60000; 
-        const adPopup = document.getElementById('video-popup-ad');
-        const adOverlay = document.getElementById('ad-overlay-backdrop');
-        const backupClose = document.querySelector('.id-backup-close-container');
-        let isScriptLoaded = false; 
+            isTracked = false;
+            if (focusInterval) clearInterval(focusInterval);
 
-        setInterval(() => {
-            if (document.getElementById('tiktok-player-modal').classList.contains('hidden')) return;
-            
-            adPopup.classList.remove('hidden'); 
-            adOverlay.classList.remove('hidden'); 
-            backupClose.classList.add('hidden'); 
+            // ভিডিও প্লে হওয়ার আগ পর্যন্ত পর্দা জোড়া সম্পূর্ণ নিষ্ক্রিয় ও লুকানো থাকবে
+            shieldTop.style.display = 'none';
+            shieldTop.style.pointerEvents = 'none';
+            shieldBottomRight.style.display = 'none';
+            shieldBottomRight.style.pointerEvents = 'none';
 
-            setTimeout(() => {
-                backupClose.classList.remove('hidden');
-            }, 3000);
+            videoHolder.innerHTML = target.embedCode;
 
-            if (!isScriptLoaded) {
-                const adScript = document.createElement('script');
-                adScript.type = 'text/javascript';
-                adScript.async = true;
-                adScript.setAttribute('data-cfasync', 'false');
-                adScript.src = 'https://pl30206955.effectivecpmnetwork.com/ad2a277cb179616968d143b403f44c87/invoke.js'; 
-                document.body.appendChild(adScript);
-                isScriptLoaded = true;
+            const iframe = videoHolder.querySelector('iframe');
+            if (iframe) {
+                iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-forms allow-presentation');
+
+                iframe.onload = () => {
+                    loadingScreen.classList.add('hidden');
+                };
+
+                const activateShieldsAfterPlay = () => {
+                    if (!isTracked) {
+                        isTracked = true;
+
+                        // ভিডিও প্লে হওয়া মাত্রই পর্দা ব্লক করবে কিন্তু কোনো অ্যাড লিঙ্ক ট্রিগার করবে না
+                        shieldTop.style.display = 'block';
+                        shieldTop.style.pointerEvents = 'auto';
+                        shieldBottomRight.style.display = 'block';
+                        shieldBottomRight.style.pointerEvents = 'auto';
+
+                        window.removeEventListener('blur', activateShieldsAfterPlay);
+                        if (focusInterval) clearInterval(focusInterval);
+                    }
+                };
+
+                window.addEventListener('blur', activateShieldsAfterPlay);
+
+                focusInterval = setInterval(() => {
+                    if (document.activeElement === iframe) {
+                        activateShieldsAfterPlay();
+                    }
+                }, 30);
+
+            } else {
+                loadingScreen.classList.add('hidden');
             }
-        }, POPUP_INTERVAL);
 
-        function hidePopup() {
-            adPopup.classList.add('hidden');
-            adOverlay.classList.add('hidden');
+            // 🎯 FIXED: পর্দা জোড়ায় ক্লিক পড়লে কোনো অ্যাড ওপেন হবে না, ক্লিক প্রপাগেশন লক থাকবে
+            shieldTop.onclick = function (e) {
+                e.stopPropagation();
+            };
+
+            shieldBottomRight.onclick = function (e) {
+                e.stopPropagation();
+            };
         }
 
-        document.getElementById('close-popup-btn').addEventListener('click', (e) => { e.stopPropagation(); hidePopup(); });
-        document.getElementById('backup-close-btn').addEventListener('click', (e) => { e.stopPropagation(); hidePopup(); });
-        adOverlay.addEventListener('click', () => hidePopup());
+        unlockBtn.addEventListener('click', () => {
+            isPopupVideoUnlocked = true;
+            window.open(ADSTERRA_SMART_LINK, '_blank');
+            lockModal.classList.add('hidden');
+            sessionStorage.setItem('popupDismissed', 'true');
+            if (randomSelectedIdx !== null) loadVideoRequest(randomSelectedIdx);
+        });
 
-        // Initialize Call
-        fetchGridVideos();
+        playerUnlockBtn.addEventListener('click', () => {
+            isPopupVideoUnlocked = true;
+            window.open(ADSTERRA_SMART_LINK, '_blank');
+            playerLockOverlay.classList.add('hidden');
+            if (activeVideoIdx !== null) loadVideoRequest(activeVideoIdx);
+        });
+
+        closeLockModalBtn.addEventListener('click', () => {
+            lockModal.classList.add('hidden');
+            sessionStorage.setItem('popupDismissed', 'true');
+        });
+
+        initPortal();
+
+        setTimeout(() => {
+            const adScript = document.createElement('script');
+            adScript.type = 'text/javascript';
+            adScript.async = true;
+            adScript.setAttribute('data-cfasync', 'false');
+            adScript.src = 'https://pl30206955.effectivecpmnetwork.com/ad2a277cb179616968d143b403f44c87/invoke.js';
+            document.body.appendChild(adScript);
+        }, 1500);
     </script>
 </body>
 
